@@ -1,0 +1,29 @@
+﻿@{
+    ViewData["Title"] = "Оформление въезда";
+}
+ 
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Оформление въезда</title>
+</head>
+<body>
+<div>
+    <p>Для оформления въезда заполните следующие поля:</p>
+    <form method="post">
+        <input type="hidden" value="@ViewBag.TariffId" name="TariffId" />
+        <table>
+            <tr>
+                <td>Имя:</td>
+                <td><input type="text" name="User" /> </td>
+            </tr>
+            <tr>
+                <td>Примерное кол-во часов(потом снесу):</td>
+                <td><input type="number" name="Time" /></td>
+            </tr>
+            <tr><td><input type="submit" value="Въехать" /> </td><td></td></tr>
+        </table>
+    </form>
+</div>
+</body>
+</html>

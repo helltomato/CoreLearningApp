@@ -1,0 +1,29 @@
+﻿@model IEnumerable<CoreLearningApplication.Models.Tariff>
+@{
+    ViewData["Title"] = "Парковка";
+}
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Въезд на парковку</title>
+</head>
+<body>
+<h3>Тарифы</h3>
+<table>
+    <tr>
+        <td>Название</td>
+        <td>Стоимость</td>
+        <td></td>
+    </tr>
+    @foreach (var tariff in Model)
+    {
+        <tr>
+            <td>@tariff.Name </td>
+            <td>@tariff.Price руб\час </td>
+            <td><a href="~/Home/Buy/@tariff.Id">Выбрать</a></td>
+        </tr>
+    }
+</table>
+</body>
+</html>
