@@ -9,7 +9,7 @@ namespace CoreLearningApplication.Helpers
 
     public static class SampleData
     {
-        public static void Initialize(TariffContext context)
+        public static void Initialize(TariffContext context) //наполняем базу тарифов
         {
             if (!context.Tariffs.Any())
             {

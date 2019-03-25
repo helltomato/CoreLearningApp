@@ -14,10 +14,6 @@ namespace CoreLearningApplication.Models
         public string Email { get; set; }
         public string Password { get; set; }
     }
-
-}
-namespace AuthApp.Models
-{
     public class UserContext : DbContext
     {
         public DbSet<User> Users { get; set; }

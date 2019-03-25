@@ -1,15 +1,23 @@
-﻿@{
+﻿@model Order 
+@{
     ViewData["Title"] = "Оформление въезда";
 }
 <html>
 <head>
     <title>Добро пожаловать на парковку</title>
 </head>
-<body>  
+<body>
     <table>
-        <tr><td><a href="~/Account/Login/">Войти \ Зарегестрироваться</a></td></tr>
-
-        <tr><td><a href="~/Home/RegisteredTariffs/">Заехать на парковку</a></td></tr>
+        @if (Model == null)
+        {
+            <tr><td><a href="~/Home/Tariffs/">Заехать на парковку</a></td></tr>
+        }
+        else
+        {
+            <tr><td>номер заезда: @Model.OrderId</td></tr>
+            <tr><td>вы тут уже @DateTime.Now.Subtract(Model.EnteringTime) секунд</td></tr>
+            <tr><td><a href="~/Home/LeaveParking/@Model.OrderId">Уехать с парковки</a></td></tr>
+        }
     </table>
 </body>
 </html>

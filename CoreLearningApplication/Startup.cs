@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AuthApp.Models;
 using CoreLearningApplication.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
@@ -33,8 +32,6 @@ namespace CoreLearningApplication
             services.AddDbContext<UserContext>(options => options.UseSqlServer(userConnection));
             services.AddDbContext<TariffContext>(options => options.UseSqlServer(tariffConnection));
             // установка конфигурации подключения
-            //TODO: отключить принудительную аутентификацию
-            //TODO: реализовать Логаут
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                     .AddCookie(options =>
                     {

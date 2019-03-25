@@ -1,0 +1,16 @@
+﻿@model object
+
+@{
+   
+    Layout = "_Layout";
+}
+
+<h2>@ViewBag.Title</h2>
+<table>
+    @*<tr><td><a href="~/Account/Login/">Войти \ Зарегестрироваться</a></td></tr>*@
+
+        <tr><td>Вы провели @ViewBag.SpentTime</td></tr>
+
+        <tr><td>Заплатите @ViewBag.Bill рублей!</td></tr>
+ 
+</table>

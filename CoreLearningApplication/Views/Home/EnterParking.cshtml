@@ -15,11 +15,14 @@
         <table>
             <tr>
                 <td>Имя:</td>
-                <td><input type="text" name="User" /> </td>
-            </tr>
-            <tr>
-                <td>Примерное кол-во часов(потом снесу):</td>
-                <td><input type="number" name="Time" /></td>
+                @if (User.Identity.IsAuthenticated)
+                {
+                <td><input type="text" value="@User.Identity.Name" name="User" /></td>
+                }
+                else
+                {
+                    <td><input type="text" name="User"/></td>
+                }
             </tr>
             <tr><td><input type="submit" value="Въехать" /> </td><td></td></tr>
         </table>
