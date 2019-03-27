@@ -12,7 +12,9 @@ namespace CoreLearningApplication.Controllers
 {
     public class AccountController : Controller
     {
-        private UserContext db;
+    //return RedirectToRoute("default", new { controller = "Home", action = "Square", height = 2, altitude = 20});
+
+private UserContext db;
         public AccountController(UserContext context)
         {
             db = context;

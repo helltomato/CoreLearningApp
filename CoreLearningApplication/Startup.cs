@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CoreLearningApplication.Controllers;
+using CoreLearningApplication.Helpers;
 using CoreLearningApplication.Models;
+using CoreLearningApplication.Test;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -31,6 +34,7 @@ namespace CoreLearningApplication
             string userConnection = Configuration.GetConnectionString("DefaultUserConnection");
             services.AddDbContext<UserContext>(options => options.UseSqlServer(userConnection));
             services.AddDbContext<TariffContext>(options => options.UseSqlServer(tariffConnection));
+            services.AddTransient<IRepository, Repository>();
             // установка конфигурации подключения
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                     .AddCookie(options =>

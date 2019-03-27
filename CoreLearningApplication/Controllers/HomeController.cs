@@ -2,22 +2,22 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using CoreLearningApplication.Models;
+using CoreLearningApplication.Test;
 using Microsoft.AspNetCore.Authorization;
 
 namespace CoreLearningApplication.Controllers
 {
     public class HomeController : Controller
     {
-        TariffContext db;
-        UserContext userDB;
+        //TariffContext db;
 
-        public HomeController(TariffContext context) //TODO: понять откудаж ты вызвался и где вторая база
+        private IRepository _repo;
+
+        public HomeController(IRepository repo)
         {
-            db = context;
+            _repo = repo;
         }
 
 
@@ -27,20 +27,23 @@ namespace CoreLearningApplication.Controllers
         public IActionResult Index()
         {
             //если пользователь уже на парковке
-           var existingOrder = db.Orders.FirstOrDefault(x => x.User == User.Identity.Name && !x.IsFinished);
 
-                return View(existingOrder);
+            var userName = User?.Identity?.Name ?? "VASA";
+
+            var existingOrder = _repo.Orders.FirstOrDefault(x => x.User == userName && !x.IsFinished);
+
+            return View(existingOrder);
         }
 
         public IActionResult Tariffs()
         {
             if (User.Identity.IsAuthenticated)
             {
-                return View(db.Tariffs.ToList());
+                return View(_repo.Tariffs);
             }
             else //оставить только первый тариф, который подороже
             {
-                return View(new List<Tariff>(){db.Tariffs.FirstOrDefault()});
+                return View(new List<Tariff>() { _repo.Tariffs.FirstOrDefault() });
             }
         }
 
@@ -56,26 +59,30 @@ namespace CoreLearningApplication.Controllers
         public string EnterParking(Order order)
         {
             order.EnteringTime = DateTime.Now;
-            order.Tariff = db.Tariffs.First(x => x.Id == order.TariffId);
-            db.Orders.Add(order);
-            db.SaveChanges();
-            return  "Добро пожаловать, " + order.User;
+            order.Tariff = _repo.Tariffs.First(x => x.Id == order.TariffId);
+            _repo.Orders.Add(order);
+            _repo.SaveChanges();
+            return $"Добро пожаловать, {order.User}";
         }
         #endregion
 
         [HttpGet]
         public IActionResult LeaveParking(int id)
         {
-            var order = db.Orders.FirstOrDefault(x => x.OrderId == id);
-            order.IsFinished = true;
-            order.LeavingTime = DateTime.Now;
-            db.SaveChanges();
-            var spentTime = order.LeavingTime.Subtract(order.EnteringTime).Seconds/*.TotalHours*/; //для наглядности
-            var bill = spentTime * db.Tariffs.First(x=> x.Id == order.TariffId).Price;
+            var order = _repo.Orders.FirstOrDefault(x => x.OrderId == id);
+            if (order != null)
+            {
+                order.IsFinished = true;
+                order.LeavingTime = DateTime.Now;
+                _repo.SaveChanges();
+                var spentTime = order.LeavingTime.Subtract(order.EnteringTime).Seconds /*.TotalHours*/; //для наглядности
+                var bill = spentTime * _repo.Tariffs.First(x => x.Id == order.TariffId).Price;
 
-            ViewBag.Title = $@"Досвиданье {order.User}!";
-            ViewBag.SpentTime = spentTime.ToString();
-            ViewBag.Bill = bill.ToString();
+                ViewBag.Title = $@"Досвиданье {order.User}!";
+                ViewBag.SpentTime = spentTime.ToString();
+                ViewBag.Bill = bill.ToString();
+            }
+
             return View();
         }
 
