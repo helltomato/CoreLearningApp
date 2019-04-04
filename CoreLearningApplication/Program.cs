@@ -25,7 +25,7 @@ namespace CoreLearningApplication
                 var services = scope.ServiceProvider;
                 try
                 {
-                    var context = services.GetRequiredService<TariffContext>();
+                    var context = services.GetRequiredService<ParkingDbContext>();
                     SampleData.Initialize(context);
                 }
                 catch (Exception ex)

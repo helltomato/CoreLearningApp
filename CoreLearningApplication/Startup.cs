@@ -30,10 +30,8 @@ namespace CoreLearningApplication
 
         public void ConfigureServices(IServiceCollection services)
         {
-            string tariffConnection = Configuration.GetConnectionString("DefaultTariffConnection");
-            string userConnection = Configuration.GetConnectionString("DefaultUserConnection");
-            services.AddDbContext<UserContext>(options => options.UseSqlServer(userConnection));
-            services.AddDbContext<TariffContext>(options => options.UseSqlServer(tariffConnection));
+            string tariffConnection = Configuration.GetConnectionString("DefaultParkingDbConnection");
+            services.AddDbContext<ParkingDbContext>(options => options.UseSqlServer(tariffConnection));
             services.AddTransient<IRepository, Repository>();
             // установка конфигурации подключения
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

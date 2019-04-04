@@ -17,11 +17,11 @@
                 <td>Имя:</td>
                 @if (User.Identity.IsAuthenticated)
                 {
-                <td><input type="text" value="@User.Identity.Name" name="User" /></td>
+                <td><input type="text" value="@User.Identity.Name" name="UserName" /></td>
                 }
                 else
                 {
-                    <td><input type="text" name="User"/></td>
+                    <td><input type="text" name="UserName"/></td>
                 }
             </tr>
             <tr><td><input type="submit" value="Въехать" /> </td><td></td></tr>

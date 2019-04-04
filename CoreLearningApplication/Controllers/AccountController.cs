@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
@@ -14,8 +15,8 @@ namespace CoreLearningApplication.Controllers
     {
     //return RedirectToRoute("default", new { controller = "Home", action = "Square", height = 2, altitude = 20});
 
-private UserContext db;
-        public AccountController(UserContext context)
+private IRepository db;
+        public AccountController(IRepository context)
         {
             db = context;
         }
@@ -30,7 +31,7 @@ private UserContext db;
         {
             if (ModelState.IsValid)
             {
-                User user = await db.Users.FirstOrDefaultAsync(u => u.Email == model.Email && u.Password == model.Password);
+                User user =  db.Users.FirstOrDefault(u => u.Email == model.Email && u.Password == model.Password);
                 if (user != null)
                 {
                     await Authenticate(model.Email); // аутентификация
@@ -52,12 +53,12 @@ private UserContext db;
         {
             if (ModelState.IsValid)
             {
-                User user = await db.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
+                User user =  db.Users.FirstOrDefault(u => u.Email == model.Email);
                 if (user == null)
                 {
                     // добавляем пользователя в бд
-                    db.Users.Add(new User { Email = model.Email, Password = model.Password });
-                    await db.SaveChangesAsync();
+                    db.Users.Add(new User { Name = model.Email, Email = model.Email, Password = model.Password ,UserType = UserType.Registered});//TODO:разграничить мыло и имя у пользователя
+                     db.SaveChanges();
 
                     await Authenticate(model.Email); // аутентификация
 

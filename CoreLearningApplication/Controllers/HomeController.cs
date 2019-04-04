@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using CoreLearningApplication.Models;
 using CoreLearningApplication.Test;
@@ -30,21 +31,22 @@ namespace CoreLearningApplication.Controllers
 
             var userName = User?.Identity?.Name ?? "VASA";
 
-            var existingOrder = _repo.Orders.FirstOrDefault(x => x.User == userName && !x.IsFinished);
+            var existingOrder = _repo.Orders.FirstOrDefault(x => x.User.Name == userName && !x.IsFinished);
 
             return View(existingOrder);
         }
 
         public IActionResult Tariffs()
         {
-            if (User.Identity.IsAuthenticated)
-            {
-                return View(_repo.Tariffs);
-            }
-            else //оставить только первый тариф, который подороже
-            {
-                return View(new List<Tariff>() { _repo.Tariffs.FirstOrDefault() });
-            }
+            //ищем юзверя в базе
+            var userFromDb = _repo.Users.FirstOrDefault(y => y.Name == User.Identity.Name);
+            //если такой есть - перебираем все роли для данного юзертайпа и собираем доступные тарифы из ролей
+            var tariffs = (User.Identity.IsAuthenticated && userFromDb != null) 
+                ? _repo.UserRoles.FindAll(x => x.UserType == userFromDb.UserType).Select(y => y.AvalibleTariff).ToList()
+                //
+                : _repo.UserRoles.FindAll(x => x.UserType == UserType.Unregistered).Select(y => y.AvalibleTariff).ToList();
+
+            return View(tariffs);
         }
 
         #region Buy
@@ -56,13 +58,16 @@ namespace CoreLearningApplication.Controllers
             return View();
         }
         [HttpPost]
-        public string EnterParking(Order order)
+        public string EnterParking(Order order ,string UserName)
         {
             order.EnteringTime = DateTime.Now;
             order.Tariff = _repo.Tariffs.First(x => x.Id == order.TariffId);
-            _repo.Orders.Add(order);
-            _repo.SaveChanges();
-            return $"Добро пожаловать, {order.User}";
+            order.User = _repo.Users.FirstOrDefault(y => y.Name == UserName) ?? Models.User.GetDefaultUser(UserName);
+
+                 _repo.Orders.Add(order);
+                 _repo.SaveChanges();
+
+            return $"Добро пожаловать, {order.User.Name}";
         }
         #endregion
 
