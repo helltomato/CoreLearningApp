@@ -19,7 +19,11 @@ namespace CoreLearningApplication.Models
         public string Password { get; set; }
         public string Name { get; set; }
         public UserType UserType { get; set; }
-
+        /// <summary>
+        /// Метод для получения стандартизированного дефолтного юзера
+        /// </summary>
+        /// <param name="name">Имя пользователя(ну или номер автомобиля)</param>
+        /// <returns>Дефолтный незарегестрированный пользователь</returns>
         public static User GetDefaultUser(string name)
         {
             return new User

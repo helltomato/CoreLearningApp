@@ -12,7 +12,6 @@ namespace CoreLearningApplication.Controllers
 {
     public class HomeController : Controller
     {
-        //TariffContext db;
 
         private IRepository _repo;
 
@@ -21,17 +20,34 @@ namespace CoreLearningApplication.Controllers
             _repo = repo;
         }
 
-
         [Authorize]
         [AllowAnonymous]
         [HttpGet]
         public IActionResult Index()
         {
-            //если пользователь уже на парковке
+            Order existingOrder = null;
+            //изучаем наличие печенья
+            if (HttpContext.Request.Cookies.TryGetValue("OrderId", out var orderString) 
+                && HttpContext.Request.Cookies.TryGetValue("UserType", out var userTypeString)
+                && HttpContext.Request.Cookies.TryGetValue("UserId", out var userIdString))
+            {   //изучаем качество печенья
+                if (int.TryParse(orderString, out var orderId) 
+                    && Enum.TryParse<UserType>(userTypeString, out var userType)
+                    && int.TryParse(userIdString, out var userId) )
+                {
+                    var expectedOrder = _repo.Orders.FirstOrDefault(x => x.OrderId == orderId);
+                    //валидация
+                    if(expectedOrder!=null)
+                        if (expectedOrder.User.Id == userId && expectedOrder.User.UserType == userType && !expectedOrder.IsFinished)
+                            existingOrder = expectedOrder;
+                }
+               
+            }
 
-            var userName = User?.Identity?.Name ?? "VASA";
-
-            var existingOrder = _repo.Orders.FirstOrDefault(x => x.User.Name == userName && !x.IsFinished);
+            //если не нашёлся по кукам, проверяем по Имени
+            var userName = User?.Identity?.Name;
+            if(existingOrder == null)
+               existingOrder = _repo.Orders.FirstOrDefault(x => x.User.Name == userName && !x.IsFinished);
 
             return View(existingOrder);
         }
@@ -43,13 +59,13 @@ namespace CoreLearningApplication.Controllers
             //если такой есть - перебираем все роли для данного юзертайпа и собираем доступные тарифы из ролей
             var tariffs = (User.Identity.IsAuthenticated && userFromDb != null) 
                 ? _repo.UserRoles.FindAll(x => x.UserType == userFromDb.UserType).Select(y => y.AvalibleTariff).ToList()
-                //
+                //то-же самое но для Unregistered
                 : _repo.UserRoles.FindAll(x => x.UserType == UserType.Unregistered).Select(y => y.AvalibleTariff).ToList();
 
             return View(tariffs);
         }
 
-        #region Buy
+        #region Entering
 
         [HttpGet]
         public IActionResult EnterParking(int id)
@@ -62,10 +78,19 @@ namespace CoreLearningApplication.Controllers
         {
             order.EnteringTime = DateTime.Now;
             order.Tariff = _repo.Tariffs.First(x => x.Id == order.TariffId);
+            //устанавливаем юзера из базы, если его нет то ставим дефолтного незарегестрированного
             order.User = _repo.Users.FirstOrDefault(y => y.Name == UserName) ?? Models.User.GetDefaultUser(UserName);
-
-                 _repo.Orders.Add(order);
-                 _repo.SaveChanges();
+            _repo.Orders.Add(order);
+            _repo.SaveChanges();
+            //отдаём куку с токеном
+            HttpContext.Response.Cookies.Append("OrderId", order.OrderId.ToString());
+            //информация о пользователе вообщем-то есть в ордере, но с куками не трудно махинировать на стороне браузера
+            //другими словами можно выехать по чужому токену
+            //так что немного информации о пользователе позволит проверить по базе валидность
+            //и вычислить мамкиного хацкера
+            HttpContext.Response.Cookies.Append("UserId", order.User.Id.ToString());
+            //неуверен но пускай
+            HttpContext.Response.Cookies.Append("UserType", order.User.UserType.ToString());
 
             return $"Добро пожаловать, {order.User.Name}";
         }
@@ -80,10 +105,13 @@ namespace CoreLearningApplication.Controllers
                 order.IsFinished = true;
                 order.LeavingTime = DateTime.Now;
                 _repo.SaveChanges();
+                HttpContext.Response.Cookies.Delete("OrderId");
+                HttpContext.Response.Cookies.Delete("UserId");
+                HttpContext.Response.Cookies.Delete("UserType");
                 var spentTime = order.LeavingTime.Subtract(order.EnteringTime).Seconds /*.TotalHours*/; //для наглядности
                 var bill = spentTime * _repo.Tariffs.First(x => x.Id == order.TariffId).Price;
 
-                ViewBag.Title = $@"Досвиданье {order.User}!";
+                ViewBag.Title = $@"Досвиданье {order.User.Name}!";
                 ViewBag.SpentTime = spentTime.ToString();
                 ViewBag.Bill = bill.ToString();
             }
